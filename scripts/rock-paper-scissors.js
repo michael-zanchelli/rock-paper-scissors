@@ -6,7 +6,7 @@
  * Animate the game of rock-paper-scissors
  */
 
-const numObjs = 5;
+const numObjs = 6;
 const rocks = new Array(numObjs);
 const papers = new Array(numObjs);
 const scissors = new Array(numObjs);
@@ -46,7 +46,7 @@ function rockPaperScissors() {
             y: canvas.height - margin,
             vx: 3,
             vy: -1,
-            symbol: '\u{1F4C4}', //  'P' // '\u0032',
+            symbol: '\u{1F4DC}', // '\u{1F4C4}',
         }
     }
 
@@ -105,10 +105,10 @@ function moveObjs(objArray) {
             }
 
             // Handle boundary collisions (bounce off edges)
-            if (obj.x + margin > canvas.width || obj.x - margin < 0) {
+            if (obj.x + margin > canvas.width || obj.x < 0) {
                 obj.vx = -obj.vx;
             }
-            if (obj.y + margin > canvas.height || obj.y - margin < 0) {
+            if (obj.y > canvas.height || obj.y - margin < 0) {
                 obj.vy = -obj.vy;
             }
         }
@@ -125,12 +125,12 @@ function handleCollisions(winners, losers) {
             const loser = losers[lindx];
             if (loser === null)
                 continue;
-            if (winner.x < (loser.x + margin) /* center overlaps horiz */
-                && winner.x > (loser.x - margin)
-                && winner.y < (loser.y + margin) /* center overlaps vert */
+            if ( winner.x > loser.x         /* left side overlaps horiz */
+                && winner.x < (loser.x + margin)
+                && winner.y < loser.y       /* bottom overlaps vert */
                 && winner.y > (loser.y - margin)) {
                 // console.log("winner[" + windx + "] (" + winner.symbol + ") " +
-                    // "beat loser[" + lindx + "] (" + loser.symbol + ")");
+                // "beat loser[" + lindx + "] (" + loser.symbol + ")");
                 losers[lindx] = null;
             }
         }
