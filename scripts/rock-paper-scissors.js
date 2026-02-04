@@ -11,7 +11,7 @@ const rocks = new Array(numObjs);
 const papers = new Array(numObjs);
 const scissors = new Array(numObjs);
 
-const fudge = 4;
+const fudge = 12;
 
 let canvas;
 let ctx;
@@ -20,7 +20,8 @@ let ctx;
 function rockPaperScissors() {
     canvas = document.getElementById('myCanvas');
     ctx = canvas.getContext('2d');
-    ctx.font = '14px bold Wingdings';
+    ctx.font = '24px bold'; //  Wingdings';
+    ctx.fillStyle = 'black';
 
     // Define the moving objects
     // Rocks move down from the top, center
@@ -34,7 +35,7 @@ function rockPaperScissors() {
             // Inital velocity
             vx: 1,
             vy: 3,
-            symbol: 'R', // '\u004D',
+            symbol: '\u{1FAA8}', // 'R', // '\u004D',
         }
     }
 
@@ -45,7 +46,7 @@ function rockPaperScissors() {
             y: canvas.height - fudge,
             vx: 3,
             vy: -1,
-            symbol: 'P' // '\u0032',
+            symbol: '\u{1F4C4}', //  'P' // '\u0032',
         }
     }
 
@@ -56,7 +57,7 @@ function rockPaperScissors() {
             y: canvas.height - fudge,
             vx: -3,
             vy: -1,
-            symbol: 'S', // '\u0022',
+            symbol: '\u{2702}', // 'S', // '\u0022',
         }
     }
 
@@ -143,6 +144,8 @@ function drawObjs(objArray) {
                 continue;
 
             // console.log("drawing " + obj.symbol + " (" + obj.x + ", " + obj.y + ")");
+
+            // ctx.strokeRect(obj.x, obj.y, fudge*2, -fudge*2);
 
             // Draw the obj/symbol
             ctx.fillText(obj.symbol, obj.x, obj.y);
