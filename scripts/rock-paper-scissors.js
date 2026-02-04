@@ -11,7 +11,7 @@ const rocks = new Array(numObjs);
 const papers = new Array(numObjs);
 const scissors = new Array(numObjs);
 
-const fudge = 12;
+const margin = 14;
 
 let canvas;
 let ctx;
@@ -20,7 +20,7 @@ let ctx;
 function rockPaperScissors() {
     canvas = document.getElementById('myCanvas');
     ctx = canvas.getContext('2d');
-    ctx.font = '24px bold'; //  Wingdings';
+    ctx.font = '28px serif';
     ctx.fillStyle = 'black';
 
     // Define the moving objects
@@ -28,22 +28,22 @@ function rockPaperScissors() {
     for (let indx = 0; indx < rocks.length; indx++) {
         rocks[indx] = {
             x: canvas.width / 2,
-            y: fudge,
+            y: margin,
             // Initial random velocity
             // vx: (Math.random() - 0.5) * 3, // Velocity X (-1 to 1)
             // vy: (Math.random() - 0.5) * 3, // Velocity Y (-1 to 1)
             // Inital velocity
             vx: 1,
             vy: 3,
-            symbol: '\u{1FAA8}', // 'R', // '\u004D',
+            symbol: '\u{1F4A3}' // '\u{1FAA8}',
         }
     }
 
     // Papers: papers move up from the bottom, left corner
     for (let indx = 0; indx < papers.length; indx++) {
         papers[indx] = {
-            x: fudge,
-            y: canvas.height - fudge,
+            x: margin,
+            y: canvas.height - margin,
             vx: 3,
             vy: -1,
             symbol: '\u{1F4C4}', //  'P' // '\u0032',
@@ -53,8 +53,8 @@ function rockPaperScissors() {
     // Scissors: scissors move up from the bottom, right corner
     for (let indx = 0; indx < scissors.length; indx++) {
         scissors[indx] = {
-            x: canvas.width - fudge,
-            y: canvas.height - fudge,
+            x: canvas.width - margin,
+            y: canvas.height - margin,
             vx: -3,
             vy: -1,
             symbol: '\u{2702}', // 'S', // '\u0022',
@@ -105,10 +105,10 @@ function moveObjs(objArray) {
             }
 
             // Handle boundary collisions (bounce off edges)
-            if (obj.x + fudge > canvas.width || obj.x - fudge < 0) {
+            if (obj.x + margin > canvas.width || obj.x - margin < 0) {
                 obj.vx = -obj.vx;
             }
-            if (obj.y + fudge > canvas.height || obj.y - fudge < 0) {
+            if (obj.y + margin > canvas.height || obj.y - margin < 0) {
                 obj.vy = -obj.vy;
             }
         }
@@ -125,12 +125,12 @@ function handleCollisions(winners, losers) {
             const loser = losers[lindx];
             if (loser === null)
                 continue;
-            if (winner.x < (loser.x + fudge) /* center overlaps horiz */
-                && winner.x > (loser.x - fudge)
-                && winner.y < (loser.y + fudge) /* center overlaps vert */
-                && winner.y > (loser.y - fudge)) {
-                console.log("winner[" + windx + "] (" + winner.symbol + ") " +
-                    "beat loser[" + lindx + "] (" + loser.symbol + ")");
+            if (winner.x < (loser.x + margin) /* center overlaps horiz */
+                && winner.x > (loser.x - margin)
+                && winner.y < (loser.y + margin) /* center overlaps vert */
+                && winner.y > (loser.y - margin)) {
+                // console.log("winner[" + windx + "] (" + winner.symbol + ") " +
+                    // "beat loser[" + lindx + "] (" + loser.symbol + ")");
                 losers[lindx] = null;
             }
         }
@@ -145,7 +145,7 @@ function drawObjs(objArray) {
 
             // console.log("drawing " + obj.symbol + " (" + obj.x + ", " + obj.y + ")");
 
-            // ctx.strokeRect(obj.x, obj.y, fudge*2, -fudge*2);
+            // ctx.strokeRect(obj.x, obj.y, margin*2, -margin*2);
 
             // Draw the obj/symbol
             ctx.fillText(obj.symbol, obj.x, obj.y);
