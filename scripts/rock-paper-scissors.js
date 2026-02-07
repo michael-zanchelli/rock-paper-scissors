@@ -6,60 +6,106 @@
  * Animate the game of rock-paper-scissors
  */
 
-const numObjs = 6;
-const rocks = new Array(numObjs);
-const papers = new Array(numObjs);
-const scissors = new Array(numObjs);
-
-const margin = 14;
-
 let canvas;
 let ctx;
 
+class Position {
+    x;  // left
+    y;  // bottom (consistent with text positioning)
+    vx; // horizontal velocity
+    vy; // vertical velocity
+    constructor(x, y, vx, vy) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+    }
+}
 
-function rockPaperScissors() {
+/** Base class for Rock, Paper and Scissor */
+class Entity {
+    symbol;
+    textMeasure;    // dimensions of symbol to draw
+    positions = [];
+    constructor(symbol, textMeasure) {
+        this.symbol = symbol;
+        this.textMeasure = textMeasure;
+    }
+}
+
+class Rock extends Entity {
+    constructor(num) {
+        const symbol = '\u{1F4A3}'; // unicode 'rock' emoji '\u{1FAA8}'
+        super(symbol, ctx.measureText(symbol));
+
+        // Create 'num' objects and initialize positions and velocities
+        // Rocks move down from the top, center
+        const positions = new Array(num);
+        for (let indx = 0; indx < positions.length; indx++) {
+            // Initial random velocity
+            positions[indx] = new Position(canvas.width / 2,
+                this.textMeasure.actualBoundingBoxAscent,
+                (Math.random() - 0.5) * 6, // horiz velocity (-3 to 3)
+                (Math.random() + 1) * 2); // vert velocity (2 to 4)
+        }
+        this.positions = positions;
+    }
+}
+
+class Paper extends Entity {
+    constructor(num) {
+        const symbol = '\u{1F4DC}'; // unicode 'paper' emoji
+        // toilet paper: '\u{F9FB}'
+        super(symbol, ctx.measureText(symbol));
+
+        // Create 'num' objects and initialize positions and velocities
+        // Papers move up from the bottom, left corner
+        const positions = new Array(num);
+        for (let indx = 0; indx < positions.length; indx++) {
+            // Initial random velocity
+            positions[indx] = new Position(-this.textMeasure.actualBoundingBoxLeft,
+                canvas.height,
+                (Math.random() + 1) * 2, // horiz velocity (2 to 4)
+                Math.random() - 2); // vert velocity (-1 to -2)
+        }
+        this.positions = positions;
+    }
+}
+
+class Scissor extends Entity {
+    constructor(num) {
+        const symbol = '\u{2702}'; // unicode 'scissor' emoji 
+        super(symbol, ctx.measureText(symbol));
+
+        // Create 'num' objects and initialize positions and velocities
+        // Scissors move up from the bottom, right corner
+        const positions = new Array(num);
+        for (let indx = 0; indx < positions.length; indx++) {
+            // Initial random velocity
+            positions[indx] = new Position(canvas.width - this.textMeasure.width,
+                canvas.height,
+                -Math.random() * 4, // horiz velocity (0 to -4)
+                -Math.random() * 2); // vert velocity (0 to -2)
+        }
+        this.positions = positions;
+    }
+}
+
+let rock;
+let paper;
+let scissor;
+
+function rockPaperScissor() {
+    const numObjs = 6;
     canvas = document.getElementById('myCanvas');
     ctx = canvas.getContext('2d');
     ctx.font = '28px serif';
     ctx.fillStyle = 'black';
 
-    // Define the moving objects
-    // Rocks move down from the top, center
-    for (let indx = 0; indx < rocks.length; indx++) {
-        rocks[indx] = {
-            x: canvas.width / 2,
-            y: margin,
-            // Initial random velocity
-            // vx: (Math.random() - 0.5) * 3, // Velocity X (-1 to 1)
-            // vy: (Math.random() - 0.5) * 3, // Velocity Y (-1 to 1)
-            // Inital velocity
-            vx: 1,
-            vy: 3,
-            symbol: '\u{1F4A3}' // '\u{1FAA8}',
-        }
-    }
-
-    // Papers: papers move up from the bottom, left corner
-    for (let indx = 0; indx < papers.length; indx++) {
-        papers[indx] = {
-            x: margin,
-            y: canvas.height - margin,
-            vx: 3,
-            vy: -1,
-            symbol: '\u{1F4DC}', // '\u{1F4C4}',
-        }
-    }
-
-    // Scissors: scissors move up from the bottom, right corner
-    for (let indx = 0; indx < scissors.length; indx++) {
-        scissors[indx] = {
-            x: canvas.width - margin,
-            y: canvas.height - margin,
-            vx: -3,
-            vy: -1,
-            symbol: '\u{2702}', // 'S', // '\u0022',
-        }
-    }
+    // NB: These class initializations depend on canvas & ctx
+    rock = new Rock(numObjs);
+    paper = new Paper(numObjs);
+    scissor = new Scissor(numObjs);
 
     // start the game loop
     play();
@@ -67,88 +113,93 @@ function rockPaperScissors() {
 
 // Animation loop function
 function play() {
-    moveObjs([rocks, papers, scissors]);
+    moveObjs([rock, paper, scissor]);
 
-    handleCollisions(rocks, scissors); // rocks break scissors
-    handleCollisions(scissors, papers); // scissors cut paper
-    handleCollisions(papers, rocks); // paper covers rocks
+    handleCollisions(rock, scissor); // rocks break scissors
+    handleCollisions(scissor, paper); // scissors cut paper
+    handleCollisions(paper, rock); // paper covers rocks
 
     // Clear the entire canvas before drawing the next frame
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawObjs([rocks, papers, scissors]);
+    drawObjs([rock, paper, scissor]);
 
-    // Request the next frame, if objs remain
-    if (itemsRemain([rocks, papers, scissors]))
+    // Request the next frame, if items remain
+    if (itemsRemain([rock.positions, paper.positions, scissor.positions]))
         requestAnimationFrame(play);
 }
 
 function moveObjs(objArray) {
-    for (const objs of objArray) {
-        for (const obj of objs) {
-            if (obj === null)
+    for (const obj of objArray) {
+        for (const position of obj.positions) {
+            if (position === null)
                 continue;
 
             // Update the position with current velocity
-            obj.x += obj.vx;
-            obj.y += obj.vy;
+            position.x += position.vx;
+            position.y += position.vy;
 
             // Implement random changes in direction over time
             // Periodically change velocity slightly to simulate random, smooth wandering
             if (Math.random() < 0.6) { // ~60% chance to change direction each frame
-                obj.vx += (Math.random() - 0.5) * 0.5;
-                obj.vy += (Math.random() - 0.5) * 0.5;
+                position.vx += (Math.random() - 0.5) * 0.5;
+                position.vy += (Math.random() - 0.5) * 0.5;
 
                 // Optional: Apply friction/damping to keep speeds manageable
-                // obj.vx *= 0.98;
-                // obj.vy *= 0.98;
+                // position.vx *= 0.98;
+                // position.vy *= 0.98;
             }
 
-            // Handle boundary collisions (bounce off edges)
-            if (obj.x + margin > canvas.width || obj.x < 0) {
-                obj.vx = -obj.vx;
+            // Handle boundary collisions (bounce off edges).
+            // Reverse direction if edge reached horizontally or vertically
+            if ((position.x + obj.textMeasure.width) > canvas.width || position.x < 0) {
+                position.vx = -position.vx;
             }
-            if (obj.y > canvas.height || obj.y - margin < 0) {
-                obj.vy = -obj.vy;
+            if ((position.y > canvas.height) || (position.y < obj.textMeasure.actualBoundingBoxAscent)) {
+                position.vy = -position.vy;
             }
         }
     }
-
 }
 
-function handleCollisions(winners, losers) {
-    for (let windx = 0; windx < winners.length; windx++) {
-        const winner = winners[windx];
+function handleCollisions(winObj, loseObj) {
+    for (const winner of winObj.positions) {
         if (winner === null)
             continue;
-        for (let lindx = 0; lindx < losers.length; lindx++) {
-            const loser = losers[lindx];
+        for (let indx = 0; indx < loseObj.positions.length; indx++) {
+            const loser = loseObj.positions[indx];
             if (loser === null)
                 continue;
-            if ( winner.x > loser.x         /* left side overlaps horiz */
-                && winner.x < (loser.x + margin)
-                && winner.y < loser.y       /* bottom overlaps vert */
-                && winner.y > (loser.y - margin)) {
-                // console.log("winner[" + windx + "] (" + winner.symbol + ") " +
-                // "beat loser[" + lindx + "] (" + loser.symbol + ")");
-                losers[lindx] = null;
+            if (
+                // left side overlaps horizontally
+                (winner.x > loser.x) && (winner.x < (loser.x + loseObj.textMeasure.width))
+                // bottom overlaps vertically
+                && (winner.y < loser.y) && (winner.y > (loser.y - loseObj.textMeasure.actualBoundingBoxAscent))
+            ) {
+                loseObj.positions[indx] = null;
             }
         }
     }
 }
 
 function drawObjs(objArray) {
-    for (const objs of objArray) {
-        for (const obj of objs) {
-            if (obj === null)
+    for (const obj of objArray) {
+        for (const position of obj.positions) {
+            if (position === null)
                 continue;
-
-            // console.log("drawing " + obj.symbol + " (" + obj.x + ", " + obj.y + ")");
-
-            // ctx.strokeRect(obj.x, obj.y, margin*2, -margin*2);
-
+            /*
+            const textMeasure = obj.textMeasure;
+            console.log(textMeasure);
+            ctx.strokeRect(position.x + textMeasure.actualBoundingBoxLeft,
+                position.y + textMeasure.actualBoundingBoxDescent, textMeasure.width,
+                -textMeasure.actualBoundingBoxDescent - textMeasure.actualBoundingBoxAscent);
+            ctx.beginPath();
+            ctx.arc(position.x + textMeasure.actualBoundingBoxLeft,
+                position.y + textMeasure.actualBoundingBoxDescent, 4, 0, Math.PI * 2);
+            ctx.fill();
+            */
             // Draw the obj/symbol
-            ctx.fillText(obj.symbol, obj.x, obj.y);
+            ctx.fillText(obj.symbol, position.x, position.y);
         }
     }
 }
@@ -159,11 +210,11 @@ function drawObjs(objArray) {
  * Conversely, if items remain in ONLY ONE collection, then that
  * collection wins!
  */
-function itemsRemain(objArray) {
+function itemsRemain(positionArray) {
     let numCollections = 0;
-    for (const objs of objArray) {
-        for (const obj of objs) {
-            if (obj !== null) {
+    for (const positions of positionArray) {
+        for (const position of positions) {
+            if (position !== null) {
                 numCollections++;
                 break;
             }
@@ -175,5 +226,5 @@ function itemsRemain(objArray) {
 }
 
 window.onload = () => {
-    rockPaperScissors();
+    rockPaperScissor();
 }
