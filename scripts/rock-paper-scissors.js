@@ -25,11 +25,11 @@ class Position {
 /** Base class for Rock, Paper and Scissor */
 class Entity {
     symbol;
-    textMeasure;    // dimensions of symbol to draw
+    textMetrics;    // dimensions of symbol to draw
     positions = [];
-    constructor(symbol, textMeasure) {
+    constructor(symbol, textMetrics) {
         this.symbol = symbol;
-        this.textMeasure = textMeasure;
+        this.textMetrics = textMetrics;
     }
 }
 
@@ -44,7 +44,7 @@ class Rock extends Entity {
         for (let indx = 0; indx < positions.length; indx++) {
             // Initial random velocity
             positions[indx] = new Position(canvas.width / 2,
-                this.textMeasure.actualBoundingBoxAscent,
+                this.textMetrics.actualBoundingBoxAscent,
                 (Math.random() - 0.5) * 6, // horiz velocity (-3 to 3)
                 (Math.random() + 1) * 2); // vert velocity (2 to 4)
         }
@@ -63,7 +63,7 @@ class Paper extends Entity {
         const positions = new Array(num);
         for (let indx = 0; indx < positions.length; indx++) {
             // Initial random velocity
-            positions[indx] = new Position(-this.textMeasure.actualBoundingBoxLeft,
+            positions[indx] = new Position(-this.textMetrics.actualBoundingBoxLeft,
                 canvas.height,
                 (Math.random() + 1) * 2, // horiz velocity (2 to 4)
                 Math.random() - 2); // vert velocity (-1 to -2)
@@ -82,7 +82,7 @@ class Scissor extends Entity {
         const positions = new Array(num);
         for (let indx = 0; indx < positions.length; indx++) {
             // Initial random velocity
-            positions[indx] = new Position(canvas.width - this.textMeasure.width,
+            positions[indx] = new Position(canvas.width - this.textMetrics.width,
                 canvas.height,
                 -Math.random() * 4, // horiz velocity (0 to -4)
                 -Math.random() * 2); // vert velocity (0 to -2)
@@ -152,10 +152,10 @@ function moveObjs(objArray) {
 
             // Handle boundary collisions (bounce off edges).
             // Reverse direction if edge reached horizontally or vertically
-            if ((position.x + obj.textMeasure.width) > canvas.width || position.x < 0) {
+            if ((position.x + obj.textMetrics.width) > canvas.width || position.x < 0) {
                 position.vx = -position.vx;
             }
-            if ((position.y > canvas.height) || (position.y < obj.textMeasure.actualBoundingBoxAscent)) {
+            if ((position.y > canvas.height) || (position.y < obj.textMetrics.actualBoundingBoxAscent)) {
                 position.vy = -position.vy;
             }
         }
@@ -172,9 +172,9 @@ function handleCollisions(winObj, loseObj) {
                 continue;
             if (
                 // left side overlaps horizontally
-                (winner.x > loser.x) && (winner.x < (loser.x + loseObj.textMeasure.width))
+                (winner.x > loser.x) && (winner.x < (loser.x + loseObj.textMetrics.width))
                 // bottom overlaps vertically
-                && (winner.y < loser.y) && (winner.y > (loser.y - loseObj.textMeasure.actualBoundingBoxAscent))
+                && (winner.y < loser.y) && (winner.y > (loser.y - loseObj.textMetrics.actualBoundingBoxAscent))
             ) {
                 loseObj.positions[indx] = null;
             }
@@ -188,14 +188,14 @@ function drawObjs(objArray) {
             if (position === null)
                 continue;
             /*
-            const textMeasure = obj.textMeasure;
-            console.log(textMeasure);
-            ctx.strokeRect(position.x + textMeasure.actualBoundingBoxLeft,
-                position.y + textMeasure.actualBoundingBoxDescent, textMeasure.width,
-                -textMeasure.actualBoundingBoxDescent - textMeasure.actualBoundingBoxAscent);
+            const textMetrics = obj.textMetrics;
+            console.log(textMetrics);
+            ctx.strokeRect(position.x + textMetrics.actualBoundingBoxLeft,
+                position.y + textMetrics.actualBoundingBoxDescent, textMetrics.width,
+                -textMetrics.actualBoundingBoxDescent - textMetrics.actualBoundingBoxAscent);
             ctx.beginPath();
-            ctx.arc(position.x + textMeasure.actualBoundingBoxLeft,
-                position.y + textMeasure.actualBoundingBoxDescent, 4, 0, Math.PI * 2);
+            ctx.arc(position.x + textMetrics.actualBoundingBoxLeft,
+                position.y + textMetrics.actualBoundingBoxDescent, 4, 0, Math.PI * 2);
             ctx.fill();
             */
             // Draw the obj/symbol
