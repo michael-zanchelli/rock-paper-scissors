@@ -3,17 +3,18 @@
 /**
  * Rock-Paper-Scissors
  * 
- * Animate the game of rock-paper-scissors
+ * Animate the game of _rock-paper-scissors
  */
 
-let canvas;
-let ctx;
+let _canvas;
+let _ctx;
 
 class Position {
   x;  // left
   y;  // bottom (consistent with text positioning)
   vx; // horizontal velocity
   vy; // vertical velocity
+
   constructor(x, y, vx, vy) {
     this.x = x;
     this.y = y;
@@ -30,7 +31,9 @@ class Entity {
   constructor(symbol, textMetrics) {
     this.symbol = symbol;
     this.textMetrics = textMetrics;
+
   }
+
   move() {
     for (const position of this.positions) {
       if (position === null)
@@ -53,14 +56,15 @@ class Entity {
 
       // Handle boundary collisions (bounce off edges).
       // Reverse direction if edge reached horizontally or vertically
-      if ((position.x + this.textMetrics.width) > canvas.width || position.x < 0) {
+      if ((position.x + this.textMetrics.width) > _canvas.width || position.x < 0) {
         position.vx = -position.vx;
       }
-      if ((position.y > canvas.height) || (position.y < this.textMetrics.actualBoundingBoxAscent)) {
+      if ((position.y > _canvas.height) || (position.y < this.textMetrics.actualBoundingBoxAscent)) {
         position.vy = -position.vy;
       }
     }
   }
+
   handleCollisions(winners) {
     for (const winner of winners) {
       if (winner === null)
@@ -78,6 +82,7 @@ class Entity {
       }
     }
   }
+
   draw() {
     for (const position of this.positions) {
       if (position === null)
@@ -85,18 +90,18 @@ class Entity {
       /*
       const textMetrics = this.textMetrics;
       console.log(textMetrics);
-      ctx.strokeRect(position.x + textMetrics.actualBoundingBoxLeft,
+      _ctx.strokeRect(position.x + textMetrics.actualBoundingBoxLeft,
           position.y + textMetrics.actualBoundingBoxDescent, textMetrics.width,
           -textMetrics.actualBoundingBoxDescent - textMetrics.actualBoundingBoxAscent);
-      ctx.beginPath();
-      ctx.arc(position.x + textMetrics.actualBoundingBoxLeft,
-          position.y + textMetrics.actualBoundingBoxDescent, 4, 0, Math.PI * 2);
-      ctx.fill();
+      _ctx.beginPath();
+      _ctx.arc(position.x, position.y, 4, 0, Math.PI * 2);
+      _ctx.fill();
       */
       // Draw the obj/symbol
-      ctx.fillText(this.symbol, position.x, position.y);
+      _ctx.fillText(this.symbol, position.x, position.y);
     }
   }
+
   itemsRemain() {
     for (const position of this.positions) {
       if (position !== null) {
@@ -109,16 +114,16 @@ class Entity {
 
 class Rock extends Entity {
   constructor(num) {
-    const symbol = '\u{1F4A3}'; // unicode 'rock' emoji
-    // rock: '\u{1FAA8}'
-    super(symbol, ctx.measureText(symbol));
+    const symbol = '\u{1F4A3}'; // unicode '_rock' emoji
+    // _rock: '\u{1FAA8}'
+    super(symbol, _ctx.measureText(symbol));
 
     // Create 'num' objects and initialize positions and velocities
     // Rocks move down from the top, center
     const positions = new Array(num);
     for (let indx = 0; indx < positions.length; indx++) {
       // Initial random velocity
-      positions[indx] = new Position(canvas.width / 2,
+      positions[indx] = new Position(_canvas.width / 2,
         this.textMetrics.actualBoundingBoxAscent,
         (Math.random() - 0.5) * 6, // horiz velocity (-3 to 3)
         (Math.random() + 1) * 2); // vert velocity (2 to 4)
@@ -131,7 +136,7 @@ class Paper extends Entity {
   constructor(num) {
     const symbol = '\u{1F4DC}'; // unicode 'paper' emoji
     // toilet paper: '\u{F9FB}'
-    super(symbol, ctx.measureText(symbol));
+    super(symbol, _ctx.measureText(symbol));
 
     // Create 'num' objects and initialize positions and velocities
     // Papers move up from the bottom, left corner
@@ -139,7 +144,7 @@ class Paper extends Entity {
     for (let indx = 0; indx < positions.length; indx++) {
       // Initial random velocity
       positions[indx] = new Position(-this.textMetrics.actualBoundingBoxLeft,
-        canvas.height,
+        _canvas.height - this.textMetrics.actualBoundingBoxDescent,
         (Math.random() + 1) * 2, // horiz velocity (2 to 4)
         Math.random() - 2); // vert velocity (-1 to -2)
     }
@@ -149,16 +154,16 @@ class Paper extends Entity {
 
 class Scissor extends Entity {
   constructor(num) {
-    const symbol = '\u{2702}'; // unicode 'scissor' emoji 
-    super(symbol, ctx.measureText(symbol));
+    const symbol = '\u{2702}'; // unicode '_scissor' emoji 
+    super(symbol, _ctx.measureText(symbol));
 
     // Create 'num' objects and initialize positions and velocities
     // Scissors move up from the bottom, right corner
     const positions = new Array(num);
     for (let indx = 0; indx < positions.length; indx++) {
       // Initial random velocity
-      positions[indx] = new Position(canvas.width - this.textMetrics.width,
-        canvas.height,
+      positions[indx] = new Position(_canvas.width - this.textMetrics.width,
+        _canvas.height - this.textMetrics.actualBoundingBoxDescent,
         -Math.random() * 4, // horiz velocity (0 to -4)
         -Math.random() * 2); // vert velocity (0 to -2)
     }
@@ -166,51 +171,80 @@ class Scissor extends Entity {
   }
 }
 
-let rock;
-let paper;
-let scissor;
+let _rock;
+let _paper;
+let _scissor;
+let _countControl;
+let _button;
 
-function rockPaperScissor() {
-  const numObjs = 6;
-  canvas = document.getElementById('canvas');
-  ctx = canvas.getContext('2d');
-  ctx.font = '28px serif';
-  ctx.fillStyle = 'black';
+/**
+ * Initialize game and wait for Go
+ */
+function init() {
+  _canvas = document.getElementById('canvas');
+  _ctx = _canvas.getContext('2d');
+  _ctx.font = '28px serif';
+  _ctx.fillStyle = 'black';
+
+  _countControl = document.querySelector("div#rockPaperScissorWidget #count");
+  _button = document.querySelector("div#rockPaperScissorWidget button");
+  _button.onclick = buttonClickHandler;
 
   // NB: These class initializations depend on canvas & ctx
-  rock = new Rock(numObjs);
-  paper = new Paper(numObjs);
-  scissor = new Scissor(numObjs);
+  new Rock(1).draw();
+  new Paper(1).draw();
+  new Scissor(1).draw();
+}
 
-  // start the game loop
+function rockPaperScissor() {
+  const count = Number(_countControl.value);
+
+  // NB: These class initializations depend on canvas & ctx
+  _rock = new Rock(count);
+  _paper = new Paper(count);
+  _scissor = new Scissor(count);
+
   play();
 }
 
 // Animation loop function
 function play() {
   // Move objs
-  rock.move();
-  paper.move();
-  scissor.move();
+  _rock.move();
+  _paper.move();
+  _scissor.move();
 
   // Handle collisions
-  scissor.handleCollisions(rock.positions); // rocks break scissors
-  paper.handleCollisions(scissor.positions); // scissors cut paper
-  rock.handleCollisions(paper.positions); // paper covers rocks
+  _scissor.handleCollisions(_rock.positions); // rocks break scissors
+  _paper.handleCollisions(_scissor.positions); // scissors cut paper
+  _rock.handleCollisions(_paper.positions); // paper covers rocks
 
   // Clear the entire canvas before drawing the next frame
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  _ctx.clearRect(0, 0, _canvas.width, _canvas.height);
 
   // Draw items
-  rock.draw();
-  paper.draw();
-  scissor.draw();
+  _rock.draw();
+  _paper.draw();
+  _scissor.draw();
 
   // Request the next frame, if items remain
-  if ((rock.itemsRemain() + paper.itemsRemain() + scissor.itemsRemain()) > 1)
+  if ((_rock.itemsRemain() + _paper.itemsRemain() + _scissor.itemsRemain()) > 1)
     requestAnimationFrame(play);
+  else
+    finish();
+}
+
+function buttonClickHandler() {
+  _button.disabled = true;
+  _countControl.disabled = true;
+  rockPaperScissor();
+}
+
+function finish() {
+  _countControl.disabled = false;
+  _button.disabled = false;
 }
 
 window.onload = () => {
-  rockPaperScissor();
+  init();
 }

@@ -8,7 +8,7 @@ div#rockPaperScissorWidget {
 }
 
 /* Widget Title */
-div#rockPaperScissorWidget #titleText {
+div#rockPaperScissorWidget #title {
   font: bold 20pt 'Times New Roman', serif;
 }
 
@@ -18,23 +18,13 @@ div#rockPaperScissorWidget canvas {
   border-radius: 4px;
 }
 
-/* GUI Controls */
-div#rockPaperScissorWidget #controls {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-evenly;
-  align-items: baseline;
+div#rockPaperScissorWidget #countLabel {
+  font-size: 140%;
+  margin: 1px 2px 8px 0px;
 }
 
-/* GUI control for setting the number of items */
-div#rockPaperScissorWidget #controls #countLabel {
-  font-size: 133%;
-  margin: 6px;
-}
-
-div#rockPaperScissorWidget #controls #count {
-  font-size: large;
-  margin: 6px;
+div#rockPaperScissorWidget #count {
+  margin: 1px 0px 8px 2px;
 }
 
 /* Start button */
@@ -51,4 +41,9 @@ div#rockPaperScissorWidget button {
 
 div#rockPaperScissorWidget button:hover {
   background-color: #07d;
+}
+
+div#rockPaperScissorWidget button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
