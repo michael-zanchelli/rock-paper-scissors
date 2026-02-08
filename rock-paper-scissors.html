@@ -5,18 +5,44 @@
 -->
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>Rock-Paper-Scissors</title>
-    <meta charset="utf-8" />
-    <meta name="keywords" value="rock-paper-scissors">
-    <meta name="description" value="Animate simulation of the game rock-paper-scissors">
-    <meta name="author" content="Michael Zanchelli">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="scripts/rock-paper-scissors.css" rel="stylesheet" type="text/css">
-    <script src="scripts/rock-paper-scissors.js"></script>
+<head>
+  <title>Rock-Paper-Scissors</title>
+  <meta charset="utf-8" />
+  <meta name="keywords" value="rock-paper-scissors">
+  <meta name="description" value="Animate simulation of the game rock-paper-scissors">
+  <meta name="author" content="Michael Zanchelli">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="scripts/rock-paper-scissors.css" rel="stylesheet" type="text/css">
+  <script src="scripts/rock-paper-scissors.js"></script>
 </head>
+
 <body>
-    <canvas id="myCanvas" width="600" height="400"></canvas>
+  <section>
+    <div id="rockPaperScissorWidget">
+      <div id="title">
+        <span id="titleText">Rock-Paper-Scissor</span>
+      </div>
+      <canvas id="canvas" width="600" height="400"></canvas>
+      <span id="controls">
+        <label for="count" id="countLabel">Count: <select id="count" name="count">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option selected>5</option>
+            <option>6</option>
+            <option>7</option>
+            <option>8</option>
+            <option>9</option>
+            <option>10</option>
+          </select>
+        </label>
+      </span>
+      <button type="button">Go</button>
+    </div>
+  </SECTION>
 </body>
+
 </html>

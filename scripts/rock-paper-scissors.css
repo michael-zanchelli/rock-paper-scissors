@@ -1,3 +1,54 @@
-﻿canvas {
-    border: 1px solid black;
+﻿/* Styling for Rock-Paper-Scissor game widget */
+
+div#rockPaperScissorWidget {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Widget Title */
+div#rockPaperScissorWidget #titleText {
+  font: bold 20pt 'Times New Roman', serif;
+}
+
+/* The Drawing Canvas */
+div#rockPaperScissorWidget canvas {
+  border: 2px solid black;
+  border-radius: 4px;
+}
+
+/* GUI Controls */
+div#rockPaperScissorWidget #controls {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-evenly;
+  align-items: baseline;
+}
+
+/* GUI control for setting the number of items */
+div#rockPaperScissorWidget #controls #countLabel {
+  font-size: 133%;
+  margin: 6px;
+}
+
+div#rockPaperScissorWidget #controls #count {
+  font-size: large;
+  margin: 6px;
+}
+
+/* Start button */
+div#rockPaperScissorWidget button {
+  width: 120px;
+  background-color: #09f;
+  color: white;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: large;
+}
+
+div#rockPaperScissorWidget button:hover {
+  background-color: #07d;
 }
