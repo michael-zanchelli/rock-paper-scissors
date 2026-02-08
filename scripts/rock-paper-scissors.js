@@ -31,11 +31,86 @@ class Entity {
         this.symbol = symbol;
         this.textMetrics = textMetrics;
     }
+    move() {
+        for (const position of this.positions) {
+            if (position === null)
+                continue;
+
+            // Update the position with current velocity
+            position.x += position.vx;
+            position.y += position.vy;
+
+            // Implement random changes in direction over time
+            // Periodically change velocity slightly to simulate random, smooth wandering
+            if (Math.random() < 0.6) { // ~60% chance to change direction each frame
+                position.vx += (Math.random() - 0.5) * 0.5;
+                position.vy += (Math.random() - 0.5) * 0.5;
+
+                // Optional: Apply friction/damping to keep speeds manageable
+                // position.vx *= 0.98;
+                // position.vy *= 0.98;
+            }
+
+            // Handle boundary collisions (bounce off edges).
+            // Reverse direction if edge reached horizontally or vertically
+            if ((position.x + this.textMetrics.width) > canvas.width || position.x < 0) {
+                position.vx = -position.vx;
+            }
+            if ((position.y > canvas.height) || (position.y < this.textMetrics.actualBoundingBoxAscent)) {
+                position.vy = -position.vy;
+            }
+        }
+    }
+    handleCollisions(winners) {
+        for (const winner of winners) {
+            if (winner === null)
+                continue;
+            for (let indx = 0; indx < this.positions.length; indx++) {
+                const loser = this.positions[indx];
+                if (loser === null)
+                    continue;
+                if ((winner.x > loser.x) && // left side overlaps horizontally
+                    (winner.x < (loser.x + this.textMetrics.width))
+                    && (winner.y < loser.y) && // bottom overlaps vertically
+                    (winner.y > (loser.y - this.textMetrics.actualBoundingBoxAscent))) {
+                    this.positions[indx] = null;
+                }
+            }
+        }
+    }
+    draw() {
+        for (const position of this.positions) {
+            if (position === null)
+                continue;
+            /*
+            const textMetrics = this.textMetrics;
+            console.log(textMetrics);
+            ctx.strokeRect(position.x + textMetrics.actualBoundingBoxLeft,
+                position.y + textMetrics.actualBoundingBoxDescent, textMetrics.width,
+                -textMetrics.actualBoundingBoxDescent - textMetrics.actualBoundingBoxAscent);
+            ctx.beginPath();
+            ctx.arc(position.x + textMetrics.actualBoundingBoxLeft,
+                position.y + textMetrics.actualBoundingBoxDescent, 4, 0, Math.PI * 2);
+            ctx.fill();
+            */
+            // Draw the obj/symbol
+            ctx.fillText(this.symbol, position.x, position.y);
+        }
+    }
+    itemsRemain() {
+        for (const position of this.positions) {
+            if (position !== null) {
+                return 1;
+            }
+        }
+        return 0;
+    }
 }
 
 class Rock extends Entity {
     constructor(num) {
-        const symbol = '\u{1F4A3}'; // unicode 'rock' emoji '\u{1FAA8}'
+        const symbol = '\u{1F4A3}'; // unicode 'rock' emoji
+        // rock: '\u{1FAA8}'
         super(symbol, ctx.measureText(symbol));
 
         // Create 'num' objects and initialize positions and velocities
@@ -113,116 +188,27 @@ function rockPaperScissor() {
 
 // Animation loop function
 function play() {
-    moveObjs([rock, paper, scissor]);
+    // Move objs
+    rock.move();
+    paper.move();
+    scissor.move();
 
-    handleCollisions(rock, scissor); // rocks break scissors
-    handleCollisions(scissor, paper); // scissors cut paper
-    handleCollisions(paper, rock); // paper covers rocks
+    // Handle collisions
+    scissor.handleCollisions(rock.positions); // rocks break scissors
+    paper.handleCollisions(scissor.positions); // scissors cut paper
+    rock.handleCollisions(paper.positions); // paper covers rocks
 
     // Clear the entire canvas before drawing the next frame
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawObjs([rock, paper, scissor]);
+    // Draw items
+    rock.draw();
+    paper.draw();
+    scissor.draw();
 
     // Request the next frame, if items remain
-    if (itemsRemain([rock.positions, paper.positions, scissor.positions]))
+    if ((rock.itemsRemain() + paper.itemsRemain() + scissor.itemsRemain()) > 1)
         requestAnimationFrame(play);
-}
-
-function moveObjs(objArray) {
-    for (const obj of objArray) {
-        for (const position of obj.positions) {
-            if (position === null)
-                continue;
-
-            // Update the position with current velocity
-            position.x += position.vx;
-            position.y += position.vy;
-
-            // Implement random changes in direction over time
-            // Periodically change velocity slightly to simulate random, smooth wandering
-            if (Math.random() < 0.6) { // ~60% chance to change direction each frame
-                position.vx += (Math.random() - 0.5) * 0.5;
-                position.vy += (Math.random() - 0.5) * 0.5;
-
-                // Optional: Apply friction/damping to keep speeds manageable
-                // position.vx *= 0.98;
-                // position.vy *= 0.98;
-            }
-
-            // Handle boundary collisions (bounce off edges).
-            // Reverse direction if edge reached horizontally or vertically
-            if ((position.x + obj.textMetrics.width) > canvas.width || position.x < 0) {
-                position.vx = -position.vx;
-            }
-            if ((position.y > canvas.height) || (position.y < obj.textMetrics.actualBoundingBoxAscent)) {
-                position.vy = -position.vy;
-            }
-        }
-    }
-}
-
-function handleCollisions(winObj, loseObj) {
-    for (const winner of winObj.positions) {
-        if (winner === null)
-            continue;
-        for (let indx = 0; indx < loseObj.positions.length; indx++) {
-            const loser = loseObj.positions[indx];
-            if (loser === null)
-                continue;
-            if (
-                // left side overlaps horizontally
-                (winner.x > loser.x) && (winner.x < (loser.x + loseObj.textMetrics.width))
-                // bottom overlaps vertically
-                && (winner.y < loser.y) && (winner.y > (loser.y - loseObj.textMetrics.actualBoundingBoxAscent))
-            ) {
-                loseObj.positions[indx] = null;
-            }
-        }
-    }
-}
-
-function drawObjs(objArray) {
-    for (const obj of objArray) {
-        for (const position of obj.positions) {
-            if (position === null)
-                continue;
-            /*
-            const textMetrics = obj.textMetrics;
-            console.log(textMetrics);
-            ctx.strokeRect(position.x + textMetrics.actualBoundingBoxLeft,
-                position.y + textMetrics.actualBoundingBoxDescent, textMetrics.width,
-                -textMetrics.actualBoundingBoxDescent - textMetrics.actualBoundingBoxAscent);
-            ctx.beginPath();
-            ctx.arc(position.x + textMetrics.actualBoundingBoxLeft,
-                position.y + textMetrics.actualBoundingBoxDescent, 4, 0, Math.PI * 2);
-            ctx.fill();
-            */
-            // Draw the obj/symbol
-            ctx.fillText(obj.symbol, position.x, position.y);
-        }
-    }
-}
-
-/** itemsRemain
- * Return TRUE if items remain in more than one collection,
- * i.e. rocks AND papers remain OR rocks AND scissors remain, etc.
- * Conversely, if items remain in ONLY ONE collection, then that
- * collection wins!
- */
-function itemsRemain(positionArray) {
-    let numCollections = 0;
-    for (const positions of positionArray) {
-        for (const position of positions) {
-            if (position !== null) {
-                numCollections++;
-                break;
-            }
-        }
-        if (numCollections > 1)
-            return true;
-    }
-    return false;
 }
 
 window.onload = () => {
