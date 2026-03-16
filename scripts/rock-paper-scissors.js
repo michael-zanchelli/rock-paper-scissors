@@ -3,7 +3,7 @@
 /**
  * Rock-Paper-Scissors
  * 
- * Animate the game of _rock-paper-scissors
+ * Animate the game of rock-paper-scissors
  */
 
 let _canvas;
@@ -25,13 +25,12 @@ class Position {
 
 /** Base class for Rock, Paper and Scissor */
 class Entity {
-  symbol;
-  textMetrics;    // dimensions of symbol to draw
+  #symbol;
+  metrics;    // dimensions of symbol to draw
   positions = [];
-  constructor(symbol, textMetrics) {
-    this.symbol = symbol;
-    this.textMetrics = textMetrics;
-
+  constructor(symbol, metrics) {
+    this.#symbol = symbol;
+    this.metrics = metrics;
   }
 
   move() {
@@ -55,32 +54,53 @@ class Entity {
       }
 
       // Handle boundary collisions (bounce off edges).
-      // Reverse direction if edge reached horizontally or vertically
-      if ((position.x + this.textMetrics.width) > _canvas.width || position.x < 0) {
+      // Reverse direction if the edge is reached horizontally or vertically
+      if ((position.x + this.metrics.width) > _canvas.width || position.x < 0) {
         position.vx = -position.vx;
       }
-      if ((position.y > _canvas.height) || (position.y < this.textMetrics.actualBoundingBoxAscent)) {
+      if ((position.y > _canvas.height) || (position.y < this.metrics.actualBoundingBoxAscent)) {
         position.vy = -position.vy;
       }
     }
   }
 
-  handleCollisions(winners) {
-    for (const winner of winners) {
-      if (winner === null)
+  handleCollisions(winningObj) {
+    for (const winningItem of winningObj.positions) {
+      if (winningItem === null)
         continue;
       for (let indx = 0; indx < this.positions.length; indx++) {
-        const loser = this.positions[indx];
-        if (loser === null)
+        const losingItem = this.positions[indx];
+        if (losingItem === null)
           continue;
-        if ((winner.x > loser.x) && // left side overlaps horizontally
-          (winner.x < (loser.x + this.textMetrics.width))
-          && (winner.y < loser.y) && // bottom overlaps vertically
-          (winner.y > (loser.y - this.textMetrics.actualBoundingBoxAscent))) {
+        if (this.#overlapsHoriz(winningItem, winningObj.metrics, losingItem, this.metrics)
+          && this.#overlapsVert(winningItem, winningObj.metrics, losingItem, this.metrics)) {
           this.positions[indx] = null;
         }
       }
     }
+  }
+
+  /**
+   * Determine whether item1 overlaps with item2 horizontally
+   */
+  #overlapsHoriz(item1, item1Metrics, item2, item2Metrics) {
+    return (
+      ((item1.x > item2.x) && // left side overlaps
+        (item1.x < (item2.x + item2Metrics.width)))
+      ||
+      (((item1.x + item1Metrics.width) > item2.x) && // right side overlaps
+        ((item1.x + item1Metrics.width) < (item2.x + this.metrics.width)))
+    )
+  }
+
+  #overlapsVert(item1, item1Metrics, item2, item2Metrics) {
+    return (
+      ((item1.y < item2.y) && // bottom overlaps
+        (item1.y > (item2.y - item2Metrics.actualBoundingBoxAscent)))
+      ||
+      ((((item1.y - item1Metrics.actualBoundingBoxAscent) > item2.y) && // top overlaps
+        ((item1.y - item1Metrics.actualBoundingBoxAscent) < item2.y)))
+    )
   }
 
   draw() {
@@ -88,17 +108,17 @@ class Entity {
       if (position === null)
         continue;
       /*
-      const textMetrics = this.textMetrics;
-      console.log(textMetrics);
-      _ctx.strokeRect(position.x + textMetrics.actualBoundingBoxLeft,
-          position.y + textMetrics.actualBoundingBoxDescent, textMetrics.width,
-          -textMetrics.actualBoundingBoxDescent - textMetrics.actualBoundingBoxAscent);
+      const metrics = this.metrics;
+      console.log(metrics);
+      _ctx.strokeRect(position.x + metrics.actualBoundingBoxLeft,
+          position.y + metrics.actualBoundingBoxDescent, metrics.width,
+          -metrics.actualBoundingBoxDescent - metrics.actualBoundingBoxAscent);
       _ctx.beginPath();
-      _ctx.arc(position.x, position.y, 4, 0, Math.PI * 2);
+      _ctx.arc(position.x, position.y, 3, 0, Math.PI * 2);
       _ctx.fill();
       */
       // Draw the obj/symbol
-      _ctx.fillText(this.symbol, position.x, position.y);
+      _ctx.fillText(this.#symbol, position.x, position.y);
     }
   }
 
@@ -114,9 +134,10 @@ class Entity {
 
 class Rock extends Entity {
   constructor(num) {
-    const symbol = '\u{1F4A3}'; // unicode '_rock' emoji
-    // _rock: '\u{1FAA8}'
-    super(symbol, _ctx.measureText(symbol));
+    const symbol = '\u{1F4A3}'; // unicode 'rock' emoji
+    // rock: '\u{1FAA8}'
+    const metrics = _ctx.measureText(symbol);
+    super(symbol, metrics);
 
     // Create 'num' objects and initialize positions and velocities
     // Rocks move down from the top, center
@@ -124,7 +145,7 @@ class Rock extends Entity {
     for (let indx = 0; indx < positions.length; indx++) {
       // Initial random velocity
       positions[indx] = new Position(_canvas.width / 2,
-        this.textMetrics.actualBoundingBoxAscent,
+        metrics.actualBoundingBoxAscent,
         (Math.random() - 0.5) * 6, // horiz velocity (-3 to 3)
         (Math.random() + 1) * 2); // vert velocity (2 to 4)
     }
@@ -136,15 +157,16 @@ class Paper extends Entity {
   constructor(num) {
     const symbol = '\u{1F4DC}'; // unicode 'paper' emoji
     // toilet paper: '\u{F9FB}'
-    super(symbol, _ctx.measureText(symbol));
+    const metrics = _ctx.measureText(symbol);
+    super(symbol, metrics);
 
     // Create 'num' objects and initialize positions and velocities
     // Papers move up from the bottom, left corner
     const positions = new Array(num);
     for (let indx = 0; indx < positions.length; indx++) {
       // Initial random velocity
-      positions[indx] = new Position(-this.textMetrics.actualBoundingBoxLeft,
-        _canvas.height - this.textMetrics.actualBoundingBoxDescent,
+      positions[indx] = new Position(-metrics.actualBoundingBoxLeft,
+        _canvas.height - metrics.actualBoundingBoxDescent,
         (Math.random() + 1) * 2, // horiz velocity (2 to 4)
         Math.random() - 2); // vert velocity (-1 to -2)
     }
@@ -154,16 +176,17 @@ class Paper extends Entity {
 
 class Scissor extends Entity {
   constructor(num) {
-    const symbol = '\u{2702}'; // unicode '_scissor' emoji 
-    super(symbol, _ctx.measureText(symbol));
+    const symbol = '\u{2702}'; // unicode 'scissor' emoji
+    const metrics = _ctx.measureText(symbol);
+    super(symbol, metrics);
 
     // Create 'num' objects and initialize positions and velocities
     // Scissors move up from the bottom, right corner
     const positions = new Array(num);
     for (let indx = 0; indx < positions.length; indx++) {
       // Initial random velocity
-      positions[indx] = new Position(_canvas.width - this.textMetrics.width,
-        _canvas.height - this.textMetrics.actualBoundingBoxDescent,
+      positions[indx] = new Position(_canvas.width - metrics.width,
+        _canvas.height - metrics.actualBoundingBoxDescent,
         -Math.random() * 4, // horiz velocity (0 to -4)
         -Math.random() * 2); // vert velocity (0 to -2)
     }
@@ -183,7 +206,7 @@ let _button;
 function init() {
   _canvas = document.getElementById('canvas');
   _ctx = _canvas.getContext('2d');
-  _ctx.font = '28px serif';
+  _ctx.font = '20px serif';
   _ctx.fillStyle = 'black';
 
   _countControl = document.querySelector("div#rockPaperScissorWidget #count");
@@ -215,9 +238,9 @@ function play() {
   _scissor.move();
 
   // Handle collisions
-  _scissor.handleCollisions(_rock.positions); // rocks break scissors
-  _paper.handleCollisions(_scissor.positions); // scissors cut paper
-  _rock.handleCollisions(_paper.positions); // paper covers rocks
+  _scissor.handleCollisions(_rock); // rocks break scissors
+  _paper.handleCollisions(_scissor); // scissors cut paper
+  _rock.handleCollisions(_paper); // paper covers rocks
 
   // Clear the entire canvas before drawing the next frame
   _ctx.clearRect(0, 0, _canvas.width, _canvas.height);

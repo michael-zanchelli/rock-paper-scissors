@@ -1,30 +1,45 @@
-﻿/* Styling for Rock-Paper-Scissor game widget */
+﻿body, html {
+  height: 100%;
+}
+
+/* Styling for Rock-Paper-Scissor game widget */
 
 div#rockPaperScissorWidget {
   display: flex;
   flex-flow: column nowrap;
   justify-content: space-between;
   align-items: center;
+  height: 100%;
+  width: 100%;
 }
 
 /* Widget Title */
 div#rockPaperScissorWidget #title {
   font: bold 20pt 'Times New Roman', serif;
+  flex-grow: 0;
 }
 
 /* The Drawing Canvas */
 div#rockPaperScissorWidget canvas {
   border: 2px solid black;
   border-radius: 4px;
+  /* block element helps with positioning and layout and prevents common
+   * issues like scrollbars or extra space
+   */
+  display: block;
+  height: 100%;
+  flex-grow: 1;
 }
 
 div#rockPaperScissorWidget #countLabel {
   font-size: 140%;
   margin: 1px 2px 8px 0px;
+  flex-grow: 0;
 }
 
 div#rockPaperScissorWidget #count {
   margin: 1px 0px 8px 2px;
+  flex-grow: 0;
 }
 
 /* Start button */
@@ -37,6 +52,7 @@ div#rockPaperScissorWidget button {
   border-radius: 4px;
   cursor: pointer;
   font-size: large;
+  flex-grow: 0;
 }
 
 div#rockPaperScissorWidget button:hover {
