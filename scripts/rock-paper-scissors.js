@@ -205,7 +205,7 @@ let _button;
 function init() {
   _canvas = document.getElementById('canvas');
   _ctx = _canvas.getContext('2d');
-  _ctx.font = '20px serif';
+  _ctx.font = '24px serif';
   _ctx.fillStyle = 'black';
 
   _countControl = document.querySelector("div#rockPaperScissorWidget #count");
