@@ -73,9 +73,8 @@ class Entity {
         if (losingItem === null)
           continue;
         if (this.#overlapsHoriz(winningItem, winningObj.metrics, losingItem, this.metrics)
-          && this.#overlapsVert(winningItem, winningObj.metrics, losingItem, this.metrics)) {
+          && this.#overlapsVert(winningItem, winningObj.metrics, losingItem, this.metrics))
           this.positions[indx] = null;
-        }
       }
     }
   }

@@ -16,7 +16,6 @@ div#rockPaperScissorWidget {
 /* Widget Title */
 div#rockPaperScissorWidget #title {
   font: bold 20pt 'Times New Roman', serif;
-  flex-grow: 0;
 }
 
 /* The Drawing Canvas */
@@ -28,18 +27,16 @@ div#rockPaperScissorWidget canvas {
    */
   display: block;
   height: 100%;
-  flex-grow: 1;
+  flex: 1;
 }
 
 div#rockPaperScissorWidget #countLabel {
   font-size: 140%;
   margin: 1px 2px 8px 0px;
-  flex-grow: 0;
 }
 
 div#rockPaperScissorWidget #count {
   margin: 1px 0px 8px 2px;
-  flex-grow: 0;
 }
 
 /* Start button */
